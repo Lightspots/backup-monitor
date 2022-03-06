@@ -2,11 +2,14 @@ package main
 
 import (
 	"backupMonitor/configuration"
+	"backupMonitor/datapoint"
 	"flag"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	log "github.com/sirupsen/logrus"
+	"io/ioutil"
 	"net/http"
+	"sort"
 	"time"
 
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -21,6 +24,7 @@ type metrics struct {
 
 type backupData struct {
 	metrics *metrics
+	config  configuration.BackupConfig
 	// unix seconds
 	lastRunTime int64
 }
@@ -44,7 +48,7 @@ func main() {
 	}
 
 	// setup metrics
-	setupMetrics(&data, config)
+	setupData(&data, config)
 
 	// setup handlers for backup scripts
 	http.Handle("/start", newStartHandler(&data))
@@ -76,14 +80,44 @@ func loop(data *data) {
 			backup.metrics.lastRunAge.Set(float64(age))
 		}
 
+		fileInfos, err := ioutil.ReadDir(backup.config.BackupDirectory)
+		if err != nil {
+			log.Errorln("Failed to read backup directory, ignoring...", err.Error())
+			break
+		}
+
+		var datapoints []*datapoint.Datapoint
+		for _, fileInfo := range fileInfos {
+			dp, err := datapoint.NewDatapoint(fileInfo, backup.config)
+			if err != nil {
+				log.Errorln("Invalid file in backup folder", err)
+				break
+			}
+			datapoints = append(datapoints, dp)
+		}
+
+		sort.SliceStable(datapoints, func(i, j int) bool {
+			return datapoints[i].Age < datapoints[j].Age
+		})
+
+		if len(datapoints) == 0 {
+			log.Warningf("No backups found for %s in '%s'", backup.config.Name, backup.config.BackupDirectory)
+			break
+		}
+		var newest = datapoints[0]
+
+		backup.metrics.lastBackupSize.Set(float64(newest.Size))
+		backup.metrics.lastBackupAge.Set(float64(newest.Age))
+
 		log.Debugf("Updated metrics of %s", i)
 	}
 	time.Sleep(10 * time.Second)
 }
 
-func setupMetrics(data *data, config configuration.Config) {
+func setupData(data *data, config configuration.Config) {
 	for _, backup := range config.Backups {
 		data.backups[backup.Name] = &backupData{
+			config:      backup,
 			lastRunTime: -1,
 			metrics: &metrics{
 				lastBackupAge: promauto.NewGauge(prometheus.GaugeOpts{
