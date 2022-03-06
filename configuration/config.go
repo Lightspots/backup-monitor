@@ -16,6 +16,7 @@ type BackupConfig struct {
 	BackupDirectory string `yaml:"backupDirectory"`
 	DateTimeRegex   string `yaml:"dateTimeRegex"`
 	DateTimeLayout  string `yaml:"dateTimeLayout"`
+	EpochRegex      string `yaml:"epochRegex"`
 }
 
 func ParseConfig(filename string) Config {
@@ -35,8 +36,8 @@ func ParseConfig(filename string) Config {
 	// validate
 	for _, backup := range config.Backups {
 		// TODO more
-		if backup.DateTimeLayout == "" {
-			log.Fatalln("DateTimeLayout is empty, this must be set")
+		if backup.DateTimeRegex == "" && backup.EpochRegex == "" {
+			log.Fatalln("DateTimeRegex or EpochRegex must be set")
 		}
 	}
 

@@ -61,6 +61,7 @@ func main() {
 		}
 	}()
 
+	log.Infof("Starting webserver on addr %s", config.ListenAddr)
 	err := http.ListenAndServe(config.ListenAddr, nil)
 	if err != nil {
 		log.Fatalln("Error while listening", err)
