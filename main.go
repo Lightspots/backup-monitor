@@ -58,6 +58,7 @@ func main() {
 	go func() {
 		for {
 			loop(&data)
+			time.Sleep(time.Duration(config.CheckIntervalSeconds) * time.Second)
 		}
 	}()
 
@@ -111,7 +112,6 @@ func loop(data *data) {
 
 		log.Debugf("Updated metrics of %s", i)
 	}
-	time.Sleep(10 * time.Second)
 }
 
 func setupData(data *data, config configuration.Config) {

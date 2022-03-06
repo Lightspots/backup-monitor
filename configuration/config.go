@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	ListenAddr string         `yaml:"listenAddr"`
-	Backups    []BackupConfig `yaml:"backups"`
+	ListenAddr           string         `yaml:"listenAddr"`
+	CheckIntervalSeconds int            `yaml:"checkIntervalSeconds"`
+	Backups              []BackupConfig `yaml:"backups"`
 }
 
 type BackupConfig struct {
