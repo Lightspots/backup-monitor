@@ -1,4 +1,4 @@
-module backupMonitor
+module backupmonitor
 
 go 1.17
 

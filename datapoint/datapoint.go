@@ -1,7 +1,7 @@
 package datapoint
 
 import (
-	"backupMonitor/configuration"
+	"backupmonitor/configuration"
 	log "github.com/sirupsen/logrus"
 	"io/fs"
 	"regexp"

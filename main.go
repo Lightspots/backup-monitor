@@ -1,8 +1,8 @@
 package main
 
 import (
-	"backupMonitor/configuration"
-	"backupMonitor/datapoint"
+	"backupmonitor/configuration"
+	"backupmonitor/datapoint"
 	"flag"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -34,7 +34,6 @@ type data struct {
 }
 
 func main() {
-	listenAddr := flag.String("listen-address", ":8080", "The address to listen on for HTTP requests.")
 	configFile := flag.String("configuration-file", "config.yml", "The configuration file")
 
 	// parse flags
@@ -62,7 +61,7 @@ func main() {
 		}
 	}()
 
-	err := http.ListenAndServe(*listenAddr, nil)
+	err := http.ListenAndServe(config.ListenAddr, nil)
 	if err != nil {
 		log.Fatalln("Error while listening", err)
 	}
